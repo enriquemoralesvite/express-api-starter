@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express'); // Primero importamos express
+const { validateUser } = require('./utils/validation');
 const bodyParser = require('body-parser');
 
 const fs = require('fs');
@@ -77,6 +78,57 @@ app.get('/users', (req,res)=>{
         res.json(users);
     });
 });
+
+app.post('/users', (req, res)=>{
+    const newUser=req.body;
+    fs.readFile(usersFilePath, 'utf-8', (err,data)=>{
+        if (err){
+            return res.status(500).json({error:'Error con conexión de datos'});
+        }
+        const users = JSON.parse(data);
+        users.push(newUser);
+        fs.writeFile(usersFilePath,JSON.stringify(users,null,2),(err)=>{
+            if (err){
+                return res.status(500).json({error:'Error al guardar el usuario'});
+            }
+            res.status(201).json(newUser);
+        });
+    });
+});
+
+
+app.put('/users/:id', (req, res) => {
+  const userId = parseInt(req.params.id, 10);
+  const updatedUser = { ...req.body, id: userId };
+
+  fs.readFile(usersFilePath, 'utf8', (err, data) => {
+    if (err) {
+      return res.status(500).json({ error: 'Error con conexión de datos.' });
+    }
+    const users = JSON.parse(data);
+
+    // Quitamos el usuario actual para no chocar la validación de unicidad
+    const others = users.filter(u => u.id !== userId);
+
+    const validation = validateUser(updatedUser, others);
+    if (!validation.isValid) {
+      return res.status(400).json({ error: validation.errors.join(', ') });
+    }
+
+    const newUsers = users.map(u =>
+      u.id === userId ? { ...u, ...req.body } : u
+    );
+
+    fs.writeFile(usersFilePath, JSON.stringify(newUsers, null, 2), err => {
+      if (err) {
+        return res.status(500).json({ error: 'Error al actualizar el usuario' });
+      }
+      res.json({ id: userId, ...req.body });
+    });
+  });
+});
+
+
 
 
 // Para que funcione nuestra aplicacion necesitamos escuchar hacia nuestro servidor
