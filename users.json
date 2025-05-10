@@ -6,7 +6,12 @@
   },
   {
     "id": 2,
-    "name": "Yuliana Lopilato",
-    "email": "Yulopilato@gmail.com"
+    "name": "Fulana Lopilato",
+    "email": "Fulopilato@gmail.com"
+  },
+  {
+    "id": 3,
+    "name": "Jose Morales",
+    "email": "jmorales@gmail.com"
   }
 ]
