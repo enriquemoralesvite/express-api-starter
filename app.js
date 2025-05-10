@@ -1,7 +1,13 @@
 require('dotenv').config();
 const express = require('express'); // Primero importamos express
-
 const bodyParser = require('body-parser');
+
+const fs = require('fs');
+const path = require('path');
+const usersFilePath = path.join(__dirname,'users.json');
+
+
+
 const app = express(); //Funcion para inicializar esta aplicacion
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
@@ -62,6 +68,15 @@ app.post('/api/data',(req, res)=>{
 
 });
 
+app.get('/users', (req,res)=>{
+    fs.readFile(usersFilePath, 'utf-8', (err,data)=>{
+        if(err){
+            return res.status(500).json({error:'Error con conexión de datos.'});
+        }
+        const users = JSON.parse(data);
+        res.json(users);
+    });
+});
 
 
 // Para que funcione nuestra aplicacion necesitamos escuchar hacia nuestro servidor
